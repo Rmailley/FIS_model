@@ -127,6 +127,45 @@ class FISQueue():
             return ndf
 
         self.ndf = final_step(self.df)
+
+    def get_wait_times_fis(self):
+
+        df = self.ndf
+
+        breakdown = {
+            "MPC" : .0463,
+            "GE" : 0.1636,
+            "US" : 0.5528,
+            "NONUS" : 0.2373
+        }
+
+        processing_time = { # minutes/pax
+            "MPC" : .462,
+            "GE" : 0.1636,
+            "US" : 0.5528,
+            "NONUS" : 0.2373
+        }
+
+        throughput = {
+            "MPC" : .462,
+            "GE" : 0.1636,
+            "US" : 0.5528,
+            "NONUS" : 0.2373
+        }
+
+        pax_entering = pd.DataFrame(df[0])
+
+        pax_entering['MPC'] = df['pax/min'] * breakdown['MPC']
+        pax_entering['GE'] = df['pax/min'] * breakdown['GE']
+        pax_entering['US'] = df['pax/min'] * breakdown['US']
+        pax_entering['NONUS'] = df['pax/min'] * breakdown['NONUS']
+
+        pax_exiting = pd.DataFrame(df[0])
+
+
+        
+
+
         
 
 

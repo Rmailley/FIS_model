@@ -6,4 +6,4 @@ df = pd.read_excel("FIS FINAL ARRIVALS WEAPONS SHEET 01AUG23.xlsx", header=2).il
 fqm = FISQueue(df, 1, 1, 4, 4)
 
 
-print(fqm.ndf)
+print(fqm.get_wait_times_fis())
