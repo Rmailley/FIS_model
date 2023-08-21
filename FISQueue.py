@@ -143,14 +143,14 @@ class FISQueue():
             "MPC" : .462,
             "GE" : 0.34,
             "US" : 0.403,
-            "NONUS" : 1.715
+            "NONUS" : 1.3
         }
 
         throughput = {
             "MPC" : 1/.462,
             "GE" : 1/.34,
             "US" : 1/.403,
-            "NONUS" : 1/1.715
+            "NONUS" : 1/1.3
         }
 
         pax_entering = pd.DataFrame(df[0])
@@ -162,27 +162,10 @@ class FISQueue():
 
         pax_exiting = pd.DataFrame(df[0])
 
+        
 
-        ge_ex = []
-        mpc_ex = []
-        for i in range(df[0]):
-
-            
-
-            if pax_entering['MPC'][i] == 0:
-                
-                mpc_ex.append(throughput["MPC"][i] * (self.MPC-1))
-                ge_ex.append(throughput['ge'][i] * self.GE+1)
-
-            else:
-                mpc_ex.append(throughput["MPC"][i])
-                ge_ex.append(throughput['ge'][i])
-
-
-
-
-        pax_exiting['MPC'] = mpc_ex
-        pax_exiting['GE'] = ge_ex
+        pax_exiting['MPC'] = pd.Series([throughput['MPC'] for i in range(len(df[0]))]) * self.MPC
+        pax_exiting['GE'] = pd.Series([throughput['GE'] for i in range(len(df[0]))]) * self.GE
         pax_exiting['US'] = pd.Series([throughput['US'] for i in range(len(df[0]))]) * self.CITZ
         pax_exiting['NONUS'] = pd.Series([throughput['NONUS'] for i in range(len(df[0]))]) * self.INTL
 
@@ -206,7 +189,17 @@ class FISQueue():
         paxinqueue['US'] = us
         paxinqueue['NONUS'] = nonus
 
-        return paxinqueue
+
+
+        waittime = paxinqueue.copy()
+
+        waittime["GE"] = paxinqueue["GE"] * processing_time['GE'] / self.GE                    
+        waittime["MPC"] = paxinqueue["MPC"] * processing_time['MPC'] / self.MPC
+        waittime["US"] = paxinqueue["US"] * processing_time['US'] / self.CITZ
+        waittime["NONUS"] = paxinqueue["NONUS"] * processing_time['NONUS'] / self.INTL
+
+
+        return waittime
 
 
 
