@@ -141,16 +141,16 @@ class FISQueue():
 
         processing_time = { # minutes/pax
             "MPC" : .462,
-            "GE" : 0.1636,
-            "US" : 0.5528,
-            "NONUS" : 0.2373
+            "GE" : 0.34,
+            "US" : 0.403,
+            "NONUS" : 1.715
         }
 
         throughput = {
-            "MPC" : .462,
-            "GE" : 0.1636,
-            "US" : 0.5528,
-            "NONUS" : 0.2373
+            "MPC" : 1/.462,
+            "GE" : 1/.34,
+            "US" : 1/.403,
+            "NONUS" : 1/1.715
         }
 
         pax_entering = pd.DataFrame(df[0])
@@ -161,6 +161,58 @@ class FISQueue():
         pax_entering['NONUS'] = df['pax/min'] * breakdown['NONUS']
 
         pax_exiting = pd.DataFrame(df[0])
+
+
+        ge_ex = []
+        mpc_ex = []
+        for i in range(df[0]):
+
+            
+
+            if pax_entering['MPC'][i] == 0:
+                
+                mpc_ex.append(throughput["MPC"][i] * (self.MPC-1))
+                ge_ex.append(throughput['ge'][i] * self.GE+1)
+
+            else:
+                mpc_ex.append(throughput["MPC"][i])
+                ge_ex.append(throughput['ge'][i])
+
+
+
+
+        pax_exiting['MPC'] = mpc_ex
+        pax_exiting['GE'] = ge_ex
+        pax_exiting['US'] = pd.Series([throughput['US'] for i in range(len(df[0]))]) * self.CITZ
+        pax_exiting['NONUS'] = pd.Series([throughput['NONUS'] for i in range(len(df[0]))]) * self.INTL
+
+        paxinqueue = pd.DataFrame(df[0])
+
+        mpc = [0 for i in range(len(df[0]))]
+        ge = [0 for i in range(len(df[0]))]
+        us = [0 for i in range(len(df[0]))]
+        nonus =  [0 for i in range(len(df[0]))]
+
+        for i in range(1, len(df[0])):
+            mpc[i] = max(0, mpc[i-1] + pax_entering['MPC'][i] - pax_exiting['MPC'][i])
+            ge[i] = max(0, ge[i-1] + pax_entering['GE'][i] - pax_exiting ['GE'][i])
+            us[i] = max(0, us[i-1] + pax_entering['US'][i] - pax_exiting ['US'][i])
+            nonus[i] = max(0, nonus[i-1] + pax_entering['NONUS'][i] - pax_exiting ['NONUS'][i])
+
+       
+
+        paxinqueue['MPC'] = mpc
+        paxinqueue['GE'] = ge
+        paxinqueue['US'] = us
+        paxinqueue['NONUS'] = nonus
+
+        return paxinqueue
+
+
+
+
+
+
 
 
         
