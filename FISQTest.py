@@ -5,4 +5,12 @@ df = pd.read_excel("FIS FINAL ARRIVALS WEAPONS SHEET 01AUG23.xlsx", header=2).il
 
 fqm = FISQueue(df, 1, 1, 4, 4)
 
-fqm.get_wait_times_fis().to_csv("fis_enter.csv")
+that = fqm.get_wait_times_fis()
+
+
+
+that = fqm.apply_recheck_time(that)
+
+that = fqm.apply_tsa(that)
+
+that.to_csv("fis_enter.csv")

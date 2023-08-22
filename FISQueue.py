@@ -26,6 +26,7 @@ class FISQueue():
         # Chop Input excel file 
 
         def chop_endrow(df):
+            df = df.iloc[2:]
             endrow = list(df['GATE*']).index("TOTAL=")
             return df.iloc[:endrow]
 
@@ -41,6 +42,8 @@ class FISQueue():
             return df
        
         def build_dicts(df):
+
+            # TODO: Flight to gate then apply walk time to eta, also build in capability to change etas
             df['deplane time'] = (df['IAB PAX*']+df["FIS PAX*"])/17
             df["fisratio"] = df['FIS PAX*']/(df['IAB PAX*']+df["FIS PAX*"])
 
@@ -121,7 +124,7 @@ class FISQueue():
             pmin = list(pd.DataFrame(lists).sum())
             ndf["pax/min"] = pmin
 
-            ndf.to_excel("permin.xlsx")
+            # ndf.to_excel("permin.xlsx")
 
 
             return ndf
@@ -164,10 +167,10 @@ class FISQueue():
 
         
 
-        pax_exiting['MPC'] = pd.Series([throughput['MPC'] for i in range(len(df[0]))]) * self.MPC
-        pax_exiting['GE'] = pd.Series([throughput['GE'] for i in range(len(df[0]))]) * self.GE
-        pax_exiting['US'] = pd.Series([throughput['US'] for i in range(len(df[0]))]) * self.CITZ
-        pax_exiting['NONUS'] = pd.Series([throughput['NONUS'] for i in range(len(df[0]))]) * self.INTL
+        pax_exiting['MPC'] = pd.Series([throughput['MPC'] for i in range(len(df[0]))])
+        pax_exiting['GE'] = pd.Series([throughput['GE'] for i in range(len(df[0]))])
+        pax_exiting['US'] = pd.Series([throughput['US'] for i in range(len(df[0]))])
+        pax_exiting['NONUS'] = pd.Series([throughput['NONUS'] for i in range(len(df[0]))])
 
         paxinqueue = pd.DataFrame(df[0])
 
@@ -177,10 +180,27 @@ class FISQueue():
         nonus =  [0 for i in range(len(df[0]))]
 
         for i in range(1, len(df[0])):
-            mpc[i] = max(0, mpc[i-1] + pax_entering['MPC'][i] - pax_exiting['MPC'][i])
-            ge[i] = max(0, ge[i-1] + pax_entering['GE'][i] - pax_exiting ['GE'][i])
-            us[i] = max(0, us[i-1] + pax_entering['US'][i] - pax_exiting ['US'][i])
-            nonus[i] = max(0, nonus[i-1] + pax_entering['NONUS'][i] - pax_exiting ['NONUS'][i])
+            
+            if mpc[i-1] + pax_entering['MPC'][i] <=0:
+                 mpc[i] = max(0, mpc[i-1] + pax_entering['MPC'][i] - pax_exiting['MPC'][i] * (self.MPC -1))
+                 us[i] = max(0, us[i-1] + pax_entering['US'][i] - pax_exiting ['US'][i] * (self.CITZ+1)) 
+        
+        
+            
+            else:
+                mpc[i] = max(0, mpc[i-1] + pax_entering['MPC'][i] - pax_exiting['MPC'][i] * self.MPC)
+                us[i] = max(0, us[i-1] + pax_entering['US'][i] - pax_exiting ['US'][i] * self.CITZ) 
+
+            if us[i-1] + pax_entering['US'][i] <=0:
+                us[i] = max(0, us[i-1] + pax_entering['US'][i] - pax_exiting ['US'][i]*(self.CITZ-2)) 
+                nonus[i] = max(0, nonus[i-1] + pax_entering['NONUS'][i] - pax_exiting ['NONUS'][i] * (self.INTL+2))
+            else:
+                us[i] = max(0, us[i-1] + pax_entering['US'][i] - pax_exiting ['US'][i]*self.CITZ) 
+                nonus[i] = max(0, nonus[i-1] + pax_entering['NONUS'][i] - pax_exiting ['NONUS'][i]*self.INTL)
+
+            ge[i] = max(0, ge[i-1] + pax_entering['GE'][i] - pax_exiting ['GE'][i] * self.GE) 
+            
+            
 
        
 
@@ -193,13 +213,34 @@ class FISQueue():
 
         waittime = paxinqueue.copy()
 
-        waittime["GE"] = paxinqueue["GE"] * processing_time['GE'] / self.GE                    
-        waittime["MPC"] = paxinqueue["MPC"] * processing_time['MPC'] / self.MPC
-        waittime["US"] = paxinqueue["US"] * processing_time['US'] / self.CITZ
-        waittime["NONUS"] = paxinqueue["NONUS"] * processing_time['NONUS'] / self.INTL
+        waittime["GE"] = np.ceil(paxinqueue["GE"] * processing_time['GE'] / self.GE)            
+        waittime["MPC"] = np.ceil(paxinqueue["MPC"] * processing_time['MPC'] / self.MPC)
+        waittime["US"] = np.ceil(paxinqueue["US"] * processing_time['US'] / self.CITZ)
+        waittime["NONUS"] = np.ceil(paxinqueue["NONUS"] * processing_time['NONUS'] / self.INTL)
 
 
         return waittime
+    
+
+    def apply_recheck_time(self, df):
+        df = df.set_index(df.columns[0])
+        for col in df.columns:
+            df[col] = df[col] + 3
+
+        return df
+
+    def apply_tsa(self, df):
+        
+        for col in df.columns:
+            df[col] = df[col] + 12
+
+        return df
+    
+    def apply_wtg(self, gate):
+        pass
+
+
+
 
 
 
