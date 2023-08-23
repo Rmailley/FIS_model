@@ -73,6 +73,20 @@ class FISQueue():
         self.df, self.flt_ratio, self.planecap, self.fltnum_deplane_time, self.fltnum_eta = build_dicts(self.df)
 
 
+        def edit_fltnum_eta(self, flt, eta):
+            if type(eta) != int:
+                return
+
+            if flt in self.fltnum_eta:
+                self.fltnum_eta[flt] = eta
+            else:
+                return
+            
+        def get_eta(self, flt)
+            return self.fltnum_eta[flt]
+            
+
+
         def get_list_deplanement(flt):
             
             cap = self.planecap[flt]

@@ -39,8 +39,6 @@ def run_analysis():
 
     
 
-    
-
     print(numbers)
 
     
@@ -82,6 +80,9 @@ for i in range(4):
     number_entry = tk.Entry(app, width=10)
     number_entries.append(number_entry)
     number_entry.grid(column=i, row=2, padx=5, pady=5)
+
+
+fltdata = 
     
 
     
