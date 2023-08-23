@@ -79,7 +79,7 @@ df = None
 
 ge, mpc, us, intl = 0,0,0,0
 
-l =  ["ge", "mpc", "us", "intl"]
+l =  ["Global Entry", "MPC", "US Citz", "Intl Visitors"]
 
 number_entries = []
 for i in range(4):
@@ -144,9 +144,12 @@ submitbutton = tk.Button(
     text="Submit change",
     command=submitf
 )
-submitbutton.grid(column=3, row=3, padx =5)
+submitbutton.grid(column=3, row=3, padx=5)
 
+def get_connection_data():
+    pass
 
-
+get_connect_data_button = tk.Button(app, text="Get connection data", command=get_connection_data)
+get_connect_data_button.grid(column=5, row=, sticky="se")
 
 app.mainloop()
