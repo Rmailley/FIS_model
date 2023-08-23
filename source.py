@@ -21,7 +21,7 @@ def open_file():
 
 
 def run_analysis():
-    global number_entries, df, fqm, flights, flight_menu, curr_flight
+    global number_entries, df, fqm, flights, flight_menu, curr_flight, flight_menu_select
     numbers = []
     for resp in number_entries:
         try:
@@ -50,14 +50,25 @@ def run_analysis():
 
     flight_menu.grid(row=3, column=1, padx=5, pady=5)
 
+    flight_menu_select = tk.OptionMenu(
+        app,
+        flight_for_data,
+
+        *flights,
+        command=edit_flt,
+
+    )
+
+    flight_menu_select.grid(row=20, column=0,)
+
          
 
 
 app = tk.Tk()
-app.geometry("1000x600")
+app.geometry("1000x700")
 app.title('FISConnects')
 
-app.rowconfigure(0, minsize=10)
+app.rowconfigure(list(range(25)), minsize=25)
 app.columnconfigure([0,1,2,3,4], minsize=5)
 
 
@@ -69,8 +80,8 @@ open_button = tk.Button(app, width=10, text="Open File", command=open_file)
 
 filename_label = tk.Label(app, textvariable=filename_var)
 
-open_button.grid(sticky="nw")
-filename_label.grid(row=0, column=4)
+open_button.grid(row=0, column=0)
+filename_label.grid(row=0, column=24)
 
 run = tk.Button(app, text="Run Analysis", width=10, command=run_analysis)
 run.grid(row=0, column=1)
@@ -97,7 +108,9 @@ edit_flights_label.grid(row=3, column=0, pady=10)
 def edit_flt(slatt):
     global curr_flight
 
-    print(curr_flight.get())
+    curr_flight = slatt
+
+    print(curr_flight)
     
 
 
@@ -146,10 +159,62 @@ submitbutton = tk.Button(
 )
 submitbutton.grid(column=3, row=3, padx=5)
 
+flight_for_data = tk.StringVar(app, "No Flight Selected")
 def get_connection_data():
+    global fqm, cnx_gate, gates
+    thisf = int(flight_for_data.get())
+    print("hello")
+    arrival_time = fqm.fltnum_eta[thisf]
+
+    waittimes = fqm.get_wait_times_fis()
+
+    waittimes = fqm.apply_recheck_time(waittimes)
+
+    waittimes = fqm.apply_tsa(waittimes)
+
+    waittimes = fqm.apply_wtg(waittimes, cnx_gate, gates)
+
+    slc = list(waittimes.loc[arrival_time])
+
+    statement = f"The anticipated through time for passengers by type is as follows: \n MPC:{slc[0]} Global Entry: {slc[1]}, US Citizens: {slc[2]}, Intl Visitors: {slc[3]}"
+
     pass
+    
+
+
+
 
 get_connect_data_button = tk.Button(app, text="Get connection data", command=get_connection_data)
-get_connect_data_button.grid(column=5, row=, sticky="se")
+get_connect_data_button.grid(column=2, row=20, sticky="se")
+
+if 'cnx_gate' not in globals():
+    cnx_gate = None
+
+def gateselector_help(arg):
+    global cnx_gate
+    cnx_gate = arg
+
+gates = {
+    "A Gates": 15,
+    "Low C Gates": 2,
+    "High C Gates": 4,
+    "Low D Gates" : 8,
+    "Middle D Gates": 10,
+    "High D Gates" : 15,
+    "Z Gates" : 15
+
+}
+
+gatevar = tk.StringVar(app, "A Gates")
+
+gateselect = tk.OptionMenu(
+    app,
+    gatevar,
+    *list(gates.keys()),
+    command=gateselector_help
+
+)
+gateselect.grid(column=1, row=20)
+    
 
 app.mainloop()

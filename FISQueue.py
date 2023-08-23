@@ -250,8 +250,11 @@ class FISQueue():
 
         return df
     
-    def apply_wtg(self, gate):
-        pass
+    def apply_wtg(self, df, gate, dict):
+        for col in df.columns:
+            df[col] = df[col] + dict[gate]
+
+        return df
 
 
 
