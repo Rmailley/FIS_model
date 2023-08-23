@@ -21,7 +21,7 @@ def open_file():
 
 
 def run_analysis():
-    global number_entries, df
+    global number_entries, df, fqm, flights, flight_menu, curr_flight
     numbers = []
     for resp in number_entries:
         try:
@@ -36,13 +36,21 @@ def run_analysis():
         return 
     
     fqm = FISQueue(df, *numbers)
+    flights=list(fqm.fltnum_eta.keys())
+    flight_menu.destroy()
 
-    
+    flight_menu = tk.OptionMenu(
+        app,
+        curr_flight,
 
-    print(numbers)
+        *flights,
+        command=edit_flt,
 
-    
-    
+    )
+
+    flight_menu.grid(row=3, column=1, padx=5, pady=5)
+
+         
 
 
 app = tk.Tk()
@@ -82,10 +90,61 @@ for i in range(4):
     number_entry.grid(column=i, row=2, padx=5, pady=5)
 
 
-fltdata = 
+edit_flights_label = tk.Label(app, text="Edit Flight ETA's:")
+edit_flights_label.grid(row=3, column=0, pady=10)
+
+
+def edit_flt(slatt):
+    global curr_flight
+
+    print(curr_flight.get())
     
 
+
+if "flights" not in globals():
+
+    flights = [None]
+
+curr_flight = tk.StringVar(app)
+curr_flight.set('No Flight Selected')
+flight_menu = tk.OptionMenu(
+    app,
+    curr_flight,
+
+    *flights,
+    command=edit_flt,
+
+)
+
+flight_menu.grid(row=3, column=1, padx=5, pady=5)
+
+fltentry = tk.Entry(app)
+fltentry.grid(column=2, row=3)
+def submitf():
+
+    global fqm, curr_flight
+    newentry = fltentry.get()
     
+    if (int(newentry) < 1300) | (int(newentry) > 2300):
+        messagebox.showerror("Error", "Please submit valid time ")
+        fltentry.delete(0,'end')
+        return
+    flightnum = int(curr_flight.get())
+    try:
+        fqm.fltnum_eta[flightnum] = pd.Timestamp(year=1900, month=1, day=1, hour=int(newentry[:2]), minute=int(newentry[2:]))
+    except KeyError:
+        print("bad flight")
+
+    
+    fltentry.delete(0,'end')
+    
+
+submitbutton = tk.Button(
+    app,
+    text="Submit change",
+    command=submitf
+)
+submitbutton.grid(column=3, row=3, padx =5)
 
 
 

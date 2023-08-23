@@ -82,7 +82,7 @@ class FISQueue():
             else:
                 return
             
-        def get_eta(self, flt)
+        def get_eta(self, flt):
             return self.fltnum_eta[flt]
             
 
@@ -255,18 +255,6 @@ class FISQueue():
 
 
 
-
-
-
-
-
-
-
-
-        
-
-
-        
 
 
         
