@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 from FISQueue import FISQueue
 import pandas as pd
+import numpy as np
 import tksheet
 import openpyxl
 
@@ -59,13 +60,13 @@ def run_analysis():
 
     )
 
-    flight_menu_select.grid(row=20, column=0,)
+    flight_menu_select.grid(row=6, column=0,)
 
          
 
 
 app = tk.Tk()
-app.geometry("1000x700")
+app.geometry("700x350")
 app.title('FISConnects')
 
 app.rowconfigure(list(range(25)), minsize=25)
@@ -108,7 +109,7 @@ edit_flights_label.grid(row=3, column=0, pady=10)
 def edit_flt(slatt):
     global curr_flight
 
-    curr_flight = slatt
+    curr_flight.set(str(slatt))
 
     print(curr_flight)
     
@@ -161,7 +162,7 @@ submitbutton.grid(column=3, row=3, padx=5)
 
 flight_for_data = tk.StringVar(app, "No Flight Selected")
 def get_connection_data():
-    global fqm, cnx_gate, gates
+    global fqm, cnx_gate, gates, pax_status
     thisf = int(flight_for_data.get())
     print("hello")
     arrival_time = fqm.fltnum_eta[thisf]
@@ -176,16 +177,27 @@ def get_connection_data():
 
     slc = list(waittimes.loc[arrival_time])
 
-    statement = f"The anticipated through time for passengers by type is as follows: \n MPC:{slc[0]} Global Entry: {slc[1]}, US Citizens: {slc[2]}, Intl Visitors: {slc[3]}"
+    weights = [.04,.16,.55,.23]
+    wavg = np.dot(weights, slc)/np.sum(weights)
 
-    pass
+    nt = arrival_time + pd.Timedelta(minutes=wavg)
+
+    nts = str(nt.hour) + ":" + str(nt.minute)
+
+
+    statement = f"The anticipated through time for passengers by type is as follows: \n MPC:{slc[0]} Global Entry: {slc[1]}, US Citizens: {slc[2]}, Intl Visitors: {slc[3]} \n The weighted average through time for all pax types is {int(wavg)} minutes. \n Anticipated time at gate: {nts} "
+
+    pax_status.set(statement)
+
+    tk.Label(app, text=pax_status.get()).grid(column=3,row=6)
+    
     
 
 
 
 
 get_connect_data_button = tk.Button(app, text="Get connection data", command=get_connection_data)
-get_connect_data_button.grid(column=2, row=20, sticky="se")
+get_connect_data_button.grid(column=2, row=6, sticky="se")
 
 if 'cnx_gate' not in globals():
     cnx_gate = None
@@ -214,7 +226,10 @@ gateselect = tk.OptionMenu(
     command=gateselector_help
 
 )
-gateselect.grid(column=1, row=20)
+gateselect.grid(column=1, row=6)
+
+pax_status = tk.StringVar(app)
+
     
 
 app.mainloop()

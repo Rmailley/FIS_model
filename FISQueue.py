@@ -160,14 +160,14 @@ class FISQueue():
             "MPC" : .462,
             "GE" : 0.34,
             "US" : 0.403,
-            "NONUS" : 1.3
+            "NONUS" : 1.7
         }
 
         throughput = {
             "MPC" : 1/.462,
             "GE" : 1/.34,
             "US" : 1/.403,
-            "NONUS" : 1/1.3
+            "NONUS" : 1/1.7
         }
 
         pax_entering = pd.DataFrame(df[0])
